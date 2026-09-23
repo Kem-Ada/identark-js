@@ -32,6 +32,7 @@ import {
 } from "../errors.js";
 
 import { estimateCost } from "../pricing.js";
+import { validateToolDefinitions } from "../validation.js";
 
 /** Error codes a provider may use to signal a content-policy block. */
 const CONTENT_POLICY_CODES = ["content_filter", "content_policy_violation", "output_blocked"];
@@ -197,6 +198,7 @@ export class DirectGateway implements AgentGateway {
     toolChoice: string | Record<string, unknown> = "auto",
   ): Promise<LLMResponse> {
     this._checkCostCap();
+    validateToolDefinitions(tools);
     const messages = this._buildMessages(newMessages);
 
     let response: LLMResponse;
@@ -256,6 +258,7 @@ export class DirectGateway implements AgentGateway {
     tools?: Record<string, unknown>[],
     toolChoice: string | Record<string, unknown> = "auto",
   ): AsyncGenerator<StreamChunk> {
+    validateToolDefinitions(tools);
     if (this.costCap !== undefined && this.totalCost >= this.costCap) {
       throw new CostCapExceededError(
         `Cost cap of $${this.costCap.toFixed(4)} reached.`,
